@@ -1,0 +1,75 @@
+import os
+import json
+import requests
+from flask import Flask, request, jsonify
+from discord.ext import commands
+from discord import File
+
+# Flask app for payment gateway
+app = Flask(__name__)
+
+# Discord bot setup
+DISCORD_TOKEN = 'your_discord_bot_token_here'
+bot = commands.Bot(command_prefix="!")
+
+# Database file
+DB_FILE = "database.txt"
+
+# Ensure database file exists
+if not os.path.exists(DB_FILE):
+    with open(DB_FILE, "w") as db:
+        db.write("")
+
+# Function to create a new transaction
+def create_transaction(amount, description, qris_image):
+    transaction_id = f"TX-{len(open(DB_FILE).readlines()) + 1}"
+    transaction = {
+        "id": transaction_id,
+        "amount": amount,
+        "description": description,
+        "status": "pending",
+        "qris_image": qris_image,
+    }
+    with open(DB_FILE, "a") as db:
+        db.write(json.dumps(transaction) + "\n")
+    return transaction
+
+@app.route("/new_transaction", methods=["POST"])
+def new_transaction():
+    data = request.json
+    if "amount" not in data or "description" not in data or "qris_image" not in data:
+        return jsonify({"error": "Invalid payload"}), 400
+    transaction = create_transaction(data["amount"], data["description"], data["qris_image"])
+    return jsonify(transaction), 201
+
+@app.route("/transactions", methods=["GET"])
+def get_transactions():
+    with open(DB_FILE, "r") as db:
+        transactions = [json.loads(line) for line in db.readlines()]
+    return jsonify(transactions), 200
+
+# Discord bot commands
+@bot.command()
+async def notify(ctx, transaction_id):
+    with open(DB_FILE, "r") as db:
+        transactions = [json.loads(line) for line in db.readlines()]
+    transaction = next((t for t in transactions if t["id"] == transaction_id), None)
+    if not transaction:
+        await ctx.send("Transaction not found.")
+        return
+
+    await ctx.send(
+        f"Transaction {transaction_id}: {transaction['description']} for {transaction['amount']} is pending.",
+        file=File(transaction["qris_image"]),
+    )
+
+# Run Flask app
+if __name__ == "__main__":
+    from threading import Thread
+
+    def run_discord_bot():
+        bot.run(DISCORD_TOKEN)
+
+    discord_thread = Thread(target=run_discord_bot)
+    discord_thread.start()
+    app.run(host="0.0.0.0", port=5000)
