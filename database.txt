@@ -1,0 +1,9 @@
+[
+    {
+        "id": "TX-1",
+        "amount": 5000,
+        "description": "pembelian data",
+        "status": "pending",
+        "qris_image": "images/qris.jpg"
+    }
+]
