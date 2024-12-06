@@ -10,7 +10,7 @@
 1. Clone the repository:
    ```bash
    git clone <repository_url>
-   cd mount_gateway
+   cd PaymentBot
    ```
 
 2. Install dependencies:
