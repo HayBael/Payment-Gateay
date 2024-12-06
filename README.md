@@ -1,4 +1,4 @@
-# Mount Gateway
+# PaymentBot
 
 ## Features
 - Create new transactions with QRIS
