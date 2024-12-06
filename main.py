@@ -218,4 +218,4 @@ async def bantuan(ctx):
     await ctx.send(embed=embed)
 
 # Run the bot
-bot.run("OTE1NTI5MzIxMjE1NTY1ODI0.GhwXHm.ybqF1avNCG6PCUGe_4MRIH03kikrgES7cvmtCs")
+bot.run("TOKEN_BOT_TARO_SINI")
